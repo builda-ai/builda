@@ -1,3 +1,5 @@
+'use client'
+
 import classNames from 'classnames'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import SoundIcon from './sound-icon'
@@ -9,12 +11,12 @@ interface MessageProps {
 }
 
 interface PlayingMessage {
-  id: string
+  id: number
   source: AudioBufferSourceNode | null
 }
 
 const playingMessasge: PlayingMessage = {
-  id: '',
+  id: -1,
   source: null
 }
 
@@ -38,7 +40,7 @@ export default function Message({ message }: MessageProps) {
         setPlaying(false)
         source.current = null
         if (playingMessasge.id === message.id) {
-          playingMessasge.id = ''
+          playingMessasge.id = -1
           playingMessasge.source = source.current
         }
       })
@@ -62,7 +64,9 @@ export default function Message({ message }: MessageProps) {
   }, [message])
 
   useEffect(() => {
-    onPlay()
+    if (!navigator.userAgent.includes('Mobile')) {
+      onPlay()
+    }
   }, [onPlay, message.loading])
 
   const renderContent = () => {

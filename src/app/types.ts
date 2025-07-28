@@ -1,8 +1,9 @@
 export interface MessageItem {
-  id: string
+  id: number
   role: 'user' | 'assistant'
   content: string
   loading?: boolean
   audio?: Uint8Array
+  audioText?: string
   duration?: number
 }

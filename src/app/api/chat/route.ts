@@ -72,13 +72,8 @@ export async function POST(request: Request) {
     data: {
       role: 'assistant',
       content: outputText,
-      audio: outputAudio
+      audioText: Buffer.from(outputAudio).toString('base64')
     }
   }
-  const payload = msgpack.encode(resp)
-  return new Response(payload, {
-    headers: {
-      'Content-Length': payload.length.toString()
-    }
-  })
+  return Response.json(resp)
 }

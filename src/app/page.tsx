@@ -21,24 +21,30 @@ async function getDuration(audio: Uint8Array) {
   return Math.trunc(audioBuffer.duration)
 }
 
-function randomID() {
-  return `${Date.now()}${Math.random().toString().slice(2, 6)}`
+function base64ToUint8Array(base64: string) {
+  const binaryString = atob(base64)
+  const uint8Array = new Uint8Array(binaryString.length)
+  for (let i = 0; i < binaryString.length; i++) {
+    uint8Array[i] = binaryString.charCodeAt(i)
+  }
+  return uint8Array
 }
 
 export default function Home() {
   const container = useRef<HTMLDivElement>(null)
+  const id = useRef(0)
   const [loading, setLoading] = useState(false)
   const [content, setContent] = useState('')
   const [messages, setMessages] = useState<MessageItem[]>([])
 
   const onSend = async () => {
     const inputMessage: MessageItem = {
-      id: randomID(),
+      id: id.current++,
       role: 'user',
       content: content.slice(0, 200)
     }
     const outputMessage: MessageItem = {
-      id: randomID(),
+      id: id.current++,
       role: 'assistant',
       content: '',
       loading: true,
@@ -58,11 +64,10 @@ export default function Home() {
       body: payload
     })
       .then(async resp => {
-        const data = new Uint8Array(await resp.arrayBuffer())
-        const message = msgpack.decode(data) as ChatResp
+        const message = await resp.json()
         outputMessage.content = message.data.content
-        outputMessage.audio = message.data.audio?.slice()
-        outputMessage.duration = await getDuration(message.data.audio!)
+        outputMessage.audio = base64ToUint8Array(message.data.audioText!)
+        outputMessage.duration = await getDuration(outputMessage.audio.slice())
         outputMessage.loading = false
         setMessages([...messages])
       })
@@ -86,7 +91,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen aspect-9/16 mx-auto bg-black overflow-hidden relative">
+    <div className="h-screen mx-auto bg-black overflow-hidden relative">
       <video
         className={`absolute top-0 left-0 w-full h-full object-cover object-top
           transition-opacity duration-1000`}
@@ -107,10 +112,10 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <div className="px-5 py-3 relative w-full">
-          <div className="border border-white/10 rounded-full h-9 flex items-center px-4 gap-3">
+        <div className="py-3 relative w-full">
+          <div className="border border-white/30 rounded-full h-11 flex items-center px-4 gap-3">
             <input
-              className="bg-transparent border-none outline-0 flex-1 resize-none text-sm md:text-base"
+              className="bg-transparent border-none outline-0 flex-1 resize-none text-base"
               placeholder="Chat with Builda"
               disabled={loading}
               onKeyDown={onKeyDown}
@@ -119,7 +124,7 @@ export default function Home() {
             />
             <button
               disabled={loading || !content.trim()}
-              className="text-lg disabled:opacity-50"
+              className="text-xl disabled:opacity-50"
               onClick={onSend}
             >
               {loading ? <IconLoading /> : <IconSend />}
