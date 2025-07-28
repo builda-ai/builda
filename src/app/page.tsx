@@ -91,7 +91,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen mx-auto bg-black overflow-hidden relative">
+    <div className="h-screen max-w-sm mx-auto bg-black overflow-hidden relative">
       <video
         className={`absolute top-0 left-0 w-full h-full object-cover object-top
           transition-opacity duration-1000`}
