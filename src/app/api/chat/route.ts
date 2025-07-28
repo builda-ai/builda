@@ -1,0 +1,84 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import OpenAI from 'openai'
+import * as msgpack from '@msgpack/msgpack'
+import { SYSTEM_PROMPT } from './config'
+
+interface MessageItem {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface ChatRequest {
+  messages: MessageItem[]
+}
+
+export const runtime = 'edge'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.BASE_URL
+})
+
+async function text2audio(text: string) {
+  text = text.slice(0, 200)
+  const payload = {
+    text,
+    reference_id: process.env.FISH_AUDIO_VOICE_ID,
+    format: 'mp3',
+    chunk_length: 200,
+    mp3_bitrate: 128,
+    normalize: true,
+    latency: 'normal'
+  }
+  const body = msgpack.encode(payload)
+  const resp = await fetch('https://api.fish.audio/v1/tts', {
+    method: 'POST',
+    body,
+    headers: {
+      'content-type': 'application/msgpack',
+      Authorization: `Bearer ${process.env.FISH_AUDIO_API_KEY}`
+    }
+  })
+  const data = await resp.arrayBuffer()
+  return new Uint8Array(data)
+}
+
+export async function POST(request: Request) {
+  const inputBuffer = await request.arrayBuffer()
+  const body = msgpack.decode(inputBuffer) as ChatRequest
+  const model = process.env.CHAT_MODEL as any
+  const messages = body.messages.slice(-10)
+  const response = await openai.chat.completions.create({
+    stream: false,
+    model,
+    messages: [
+      {
+        role: 'system',
+        content: SYSTEM_PROMPT
+      },
+      ...messages
+    ]
+  })
+  const outputText = (response.choices[0].message.content || '').slice(0, 200)
+  if (!outputText) {
+    return Response.json({
+      code: 400,
+      message: 'Bad Request'
+    })
+  }
+  const outputAudio = await text2audio(outputText)
+  const resp = {
+    code: 0,
+    data: {
+      role: 'assistant',
+      content: outputText,
+      audio: outputAudio
+    }
+  }
+  const payload = msgpack.encode(resp)
+  return new Response(payload, {
+    headers: {
+      'Content-Length': payload.length.toString()
+    }
+  })
+}
