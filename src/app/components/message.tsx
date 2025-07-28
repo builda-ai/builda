@@ -12,7 +12,7 @@ interface MessageProps {
 
 interface PlayingMessage {
   id: number
-  source: AudioBufferSourceNode | null
+  source: HTMLAudioElement | null
 }
 
 const playingMessasge: PlayingMessage = {
@@ -23,51 +23,61 @@ const playingMessasge: PlayingMessage = {
 export default function Message({ message }: MessageProps) {
   const [playing, setPlaying] = useState(false)
   const isPlaying = useRef(false)
-  const source = useRef<AudioBufferSourceNode>(null)
+  const blobUrl = useRef('')
+  const audio = useRef<HTMLAudioElement>(null)
 
   const onPlay = useCallback(async () => {
-    if (!message.audio) return
-    if (!source.current) {
-      const context = new AudioContext()
-      const audioBuffer = await context.decodeAudioData(
-        (message.audio.buffer as ArrayBuffer).slice(0)
-      )
-      source.current = context.createBufferSource()
-      source.current.buffer = audioBuffer
-      source.current.connect(context.destination)
-      source.current.addEventListener('ended', () => {
-        isPlaying.current = false
-        setPlaying(false)
-        source.current = null
-        if (playingMessasge.id === message.id) {
-          playingMessasge.id = -1
-          playingMessasge.source = source.current
-        }
-      })
-    }
+    if (!message.audio || !audio.current) return
+    audio.current.currentTime = 0
     if (
       playingMessasge.id &&
       playingMessasge.id !== message.id &&
       playingMessasge.source
     ) {
-      playingMessasge.source.stop()
+      playingMessasge.source.pause()
     }
     if (isPlaying.current) {
-      source.current?.stop()
+      audio.current.pause()
     } else {
       isPlaying.current = true
       setPlaying(true)
-      source.current.start()
+      audio.current.play()
       playingMessasge.id = message.id
-      playingMessasge.source = source.current
+      playingMessasge.source = audio.current
     }
   }, [message])
 
+  const clean = useCallback(() => {
+    isPlaying.current = false
+    setPlaying(false)
+    if (playingMessasge.id === message.id) {
+      playingMessasge.id = -1
+      playingMessasge.source = audio.current
+    }
+  }, [message.id])
+
   useEffect(() => {
+    if (!message.audio) return
+    if (blobUrl.current) {
+      URL.revokeObjectURL(blobUrl.current)
+    }
+    const blob = new Blob([message.audio], { type: 'audio/mp3' })
+    blobUrl.current = URL.createObjectURL(blob)
+    if (!audio.current) {
+      audio.current = new Audio(blobUrl.current)
+      audio.current.addEventListener('ended', () => {
+        clean()
+      })
+      audio.current.addEventListener('pause', () => {
+        clean()
+      })
+    } else {
+      audio.current.src = blobUrl.current
+    }
     if (!navigator.userAgent.includes('Mobile')) {
       onPlay()
     }
-  }, [onPlay, message.loading])
+  }, [message.audio, message.id, onPlay, clean])
 
   const renderContent = () => {
     if (message.loading) {
@@ -91,7 +101,7 @@ export default function Message({ message }: MessageProps) {
   return (
     <div
       className={classNames(
-        'flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-md px-3 py-1.5 min-h-10 max-w-3/5 text-white/70',
+        'flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-md px-3 py-1.5 min-h-10 max-w-3/5 text-white/70 cursor-pointer',
         {
           'self-end': message.role === 'user'
         }

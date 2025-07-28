@@ -7,12 +7,6 @@ import IconSend from '@/app/assets/send.svg'
 import Message from './components/message'
 import { MessageItem } from './types'
 
-interface ChatResp {
-  code: number
-  data: MessageItem
-  message: string
-}
-
 async function getDuration(audio: Uint8Array) {
   const audioContext = new AudioContext()
   const audioBuffer = await audioContext.decodeAudioData(
