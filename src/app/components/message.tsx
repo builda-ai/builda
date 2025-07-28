@@ -15,9 +15,17 @@ interface PlayingMessage {
   source: HTMLAudioElement | null
 }
 
-const playingMessasge: PlayingMessage = {
+export const playingMessasge: PlayingMessage = {
   id: -1,
   source: null
+}
+
+export function cleanPlaying() {
+  if (playingMessasge.source) {
+    playingMessasge.source.pause()
+    playingMessasge.id = -1
+    playingMessasge.source = null
+  }
 }
 
 export default function Message({ message }: MessageProps) {
@@ -51,8 +59,7 @@ export default function Message({ message }: MessageProps) {
     isPlaying.current = false
     setPlaying(false)
     if (playingMessasge.id === message.id) {
-      playingMessasge.id = -1
-      playingMessasge.source = audio.current
+      cleanPlaying()
     }
   }, [message.id])
 

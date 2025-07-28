@@ -1,10 +1,10 @@
 'use client'
 
 import * as msgpack from '@msgpack/msgpack'
-import { useRef, useState, KeyboardEvent } from 'react'
+import { useRef, useState, KeyboardEvent, useEffect } from 'react'
 import IconLoading from '@/app/assets/loading.svg'
 import IconSend from '@/app/assets/send.svg'
-import Message from './components/message'
+import Message, { cleanPlaying } from './components/message'
 import { MessageItem } from './types'
 
 async function getDuration(audio: Uint8Array) {
@@ -30,6 +30,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [content, setContent] = useState('')
   const [messages, setMessages] = useState<MessageItem[]>([])
+
+  useEffect(() => {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cleanPlaying()
+      }
+    })
+  }, [])
 
   const onSend = async () => {
     const inputMessage: MessageItem = {
