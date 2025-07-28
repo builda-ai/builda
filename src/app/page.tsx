@@ -122,7 +122,7 @@ export default function Home() {
               disabled={loading}
               onKeyDown={onKeyDown}
               value={content}
-              onChange={e => setContent(e.target.value.trim())}
+              onChange={e => setContent(e.target.value)}
             />
             <button
               disabled={loading || !content.trim()}
