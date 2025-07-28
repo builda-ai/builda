@@ -25,7 +25,6 @@ export default function Message({ message }: MessageProps) {
 
   const onPlay = useCallback(async () => {
     if (!message.audio) return
-    console.log(playingMessasge)
     if (!source.current) {
       const context = new AudioContext()
       const audioBuffer = await context.decodeAudioData(
