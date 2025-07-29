@@ -103,11 +103,11 @@ export default function Home() {
         playsInline
         preload="auto"
       >
-        <source src="/builda.mp4" type="video/mp4" />
+        <source src="/builda_2.mp4" type="video/mp4" />
       </video>
       <div className="h-screen linear-mask relative flex flex-col items-center justify-end p-5 overflow-hidden">
         <div className="flex-1"></div>
-        <div className="max-h-60 w-full overflow-auto py-5" ref={container}>
+        <div className="max-h-80 w-full overflow-auto py-5" ref={container}>
           <div className="w-full flex flex-col items-start gap-4 py-6 message-list">
             {messages.map(item => (
               <Message message={item} key={item.id} />
@@ -117,7 +117,7 @@ export default function Home() {
         <div className="py-3 relative w-full">
           <div className="border border-white/30 rounded-full h-11 flex items-center px-4 gap-3">
             <input
-              className="bg-transparent border-none outline-0 flex-1 resize-none text-base"
+              className="bg-transparent border-none outline-0 flex-1 resize-none text-sm"
               placeholder="Chat with Builda"
               disabled={loading}
               onKeyDown={onKeyDown}
