@@ -2,6 +2,7 @@
 import OpenAI from 'openai'
 import * as msgpack from '@msgpack/msgpack'
 import { SYSTEM_PROMPT } from './config'
+import { TextToSpeechCleaner } from './helper'
 
 interface MessageItem {
   role: 'user' | 'assistant'
@@ -59,13 +60,14 @@ export async function POST(request: Request) {
       ...messages
     ]
   })
-  const outputText = (response.choices[0].message.content || '').slice(0, 200)
+  let outputText = (response.choices[0].message.content || '').slice(0, 200)
   if (!outputText) {
     return Response.json({
       code: 400,
       message: 'Bad Request'
     })
   }
+  outputText = new TextToSpeechCleaner().clean(outputText)
   const outputAudio = await text2audio(outputText)
   const resp = {
     code: 0,
