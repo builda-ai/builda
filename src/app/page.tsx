@@ -4,6 +4,7 @@ import * as msgpack from '@msgpack/msgpack'
 import { useRef, useState, KeyboardEvent, useEffect } from 'react'
 import IconLoading from '@/app/assets/loading.svg'
 import IconSend from '@/app/assets/send.svg'
+import VideoPlayer from './components/player'
 import Message, { cleanPlaying } from './components/message'
 import { MessageItem } from './types'
 
@@ -24,9 +25,28 @@ function base64ToUint8Array(base64: string) {
   return uint8Array
 }
 
+/**
+ * Shuffles an array using Fisher-Yates algorithm
+ * @param array - The input array to shuffle
+ * @returns A new shuffled array (does not modify the original)
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  // Create a copy to avoid modifying the original array
+  const shuffled = [...array]
+
+  // Fisher-Yates shuffle algorithm
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+
+  return shuffled
+}
+
 export default function Home() {
   const container = useRef<HTMLDivElement>(null)
   const id = useRef(0)
+  const [videos, setVideos] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [content, setContent] = useState('')
   const [messages, setMessages] = useState<MessageItem[]>([])
@@ -37,6 +57,11 @@ export default function Home() {
         cleanPlaying()
       }
     })
+    fetch(`/videos.json?t=${Date.now()}`)
+      .then(resp => resp.json())
+      .then(items => {
+        setVideos(shuffleArray(items).slice(0, 5) as string[])
+      })
   }, [])
 
   const onSend = async () => {
@@ -94,17 +119,11 @@ export default function Home() {
 
   return (
     <div className="h-screen max-w-sm mx-auto bg-black overflow-hidden relative">
-      <video
-        className={`absolute top-0 left-0 w-full h-full object-cover object-top
-          transition-opacity duration-1000`}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-      >
-        <source src="/builda_2.mp4" type="video/mp4" />
-      </video>
+      <VideoPlayer
+        videoUrls={videos}
+        className="absolute -top-7 left-0 w-full h-full object-cover object-top
+          transition-opacity duration-1000"
+      />
       <div className="h-screen linear-mask relative flex flex-col items-center justify-end p-5 overflow-hidden">
         <div className="flex-1"></div>
         <div className="max-h-80 w-full overflow-auto py-5" ref={container}>

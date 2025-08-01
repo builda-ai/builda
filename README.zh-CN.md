@@ -1,7 +1,7 @@
 # Builda - AI数字伴侣
 
 <div align="center">
-  <img src="public/favicon.webp" alt="Builda Logo" width="120" height="120">
+  <img src="public/builda.webp" alt="Builda Logo" width="150" height="150">
   
   [![Next.js](https://img.shields.io/badge/Next.js-15.4.4-black)](https://nextjs.org/)
   [![OpenAI](https://img.shields.io/badge/OpenAI-GPT-412991)](https://openai.com/)
