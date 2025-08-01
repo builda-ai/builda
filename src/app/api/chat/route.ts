@@ -48,7 +48,10 @@ export async function POST(request: Request) {
   const inputBuffer = await request.arrayBuffer()
   const body = msgpack.decode(inputBuffer) as ChatRequest
   const model = process.env.CHAT_MODEL as any
-  const messages = body.messages.slice(-10)
+  const messages = body.messages.slice(-10).map(item => ({
+    role: item.role,
+    content: item.content.slice(0, 1000)
+  }))
   const response = await openai.chat.completions.create({
     stream: false,
     model,
