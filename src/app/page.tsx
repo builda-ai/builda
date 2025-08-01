@@ -59,8 +59,9 @@ export default function Home() {
     })
     fetch(`/videos.json?t=${Date.now()}`)
       .then(resp => resp.json())
-      .then(items => {
-        setVideos(shuffleArray(items).slice(0, 5) as string[])
+      .then(({ count, urls }) => {
+        const items = shuffleArray(urls).slice(0, count) as string[]
+        setVideos(items)
       })
   }, [])
 
