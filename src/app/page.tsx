@@ -134,6 +134,16 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+      <div className="h-8 flex items-center justify-center text-center text-xs text-white/60">
+        <a
+          href="https://dexscreener.com/base/0x7d902825e9fe54985de2710ffd5c798f118a432c"
+          target="_blank"
+          className='underline'
+        >
+          CA: 0xB4D14D4386b0697fA41578afbac98CD5F0063A11
+        </a>
+      </div>
         <div className="py-3 relative w-full">
           <div className="border border-white/30 rounded-full h-11 flex items-center px-4 gap-3">
             <input
