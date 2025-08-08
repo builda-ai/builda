@@ -22,7 +22,7 @@ const openai = new OpenAI({
 
 async function text2audio(text: string) {
   const lang = detectLanguage(text)
-  text = text.slice(0, lang === 'chinese' ? 200 : 400)
+  text = text.slice(0, lang === 'chinese' ? 200 : 500)
   const voice =
     lang === 'chinese'
       ? process.env.FISH_AUDIO_VOICE_CN
