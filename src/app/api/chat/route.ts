@@ -2,7 +2,7 @@
 import OpenAI from 'openai'
 import * as msgpack from '@msgpack/msgpack'
 import { SYSTEM_PROMPT } from './config'
-import { TextToSpeechCleaner } from './helper'
+import { TextToSpeechCleaner, detectLanguage } from './helper'
 
 interface MessageItem {
   role: 'user' | 'assistant'
@@ -21,10 +21,15 @@ const openai = new OpenAI({
 })
 
 async function text2audio(text: string) {
-  text = text.slice(0, 200)
+  const lang = detectLanguage(text)
+  text = text.slice(0, lang === 'chinese' ? 200 : 400)
+  const voice =
+    lang === 'chinese'
+      ? process.env.FISH_AUDIO_VOICE_CN
+      : process.env.FISH_AUDIO_VOICE_EN
   const payload = {
     text,
-    reference_id: process.env.FISH_AUDIO_VOICE_ID,
+    reference_id: voice,
     format: 'mp3',
     chunk_length: 200,
     mp3_bitrate: 128,
