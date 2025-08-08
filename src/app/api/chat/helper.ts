@@ -183,35 +183,16 @@ export class TextToSpeechCleaner {
   }
 }
 
-export function detectLanguage(text: string): 'chinese' | 'english' {
-  const cleanText = text.replace(/\s/g, '')
-  if (!cleanText) return 'english'
-
-  let chineseCount = 0
-  let englishCount = 0
-
-  for (const char of cleanText) {
-    const code = char.charCodeAt(0)
-
-    if (
-      (code >= 0x4e00 && code <= 0x9fff) ||
-      (code >= 0x3000 && code <= 0x303f) ||
-      (code >= 0xff00 && code <= 0xffef)
-    ) {
-      chineseCount++
-    } else if (
-      (code >= 0x0041 && code <= 0x005a) ||
-      (code >= 0x0061 && code <= 0x007a)
-    ) {
-      englishCount++
+export function detectLanguage(
+  text: string,
+  sampleSize: number = 100
+): 'chinese' | 'english' {
+  const sample = text.slice(0, sampleSize).replace(/\s/g, '')
+  for (let i = 0; i < sample.length; i++) {
+    const code = sample.charCodeAt(i)
+    if (code >= 0x4e00 && code <= 0x9fff) {
+      return 'chinese'
     }
   }
-
-  const total = chineseCount + englishCount
-  if (total === 0) return 'english'
-
-  const chineseRatio = chineseCount / total
-
-  if (chineseRatio > 0.8) return 'chinese'
   return 'english'
 }
